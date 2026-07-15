@@ -485,6 +485,419 @@
 
   .screen{ display:none; flex-direction:column; flex:1; min-height:0; }
   .screen.active{ display:flex; }
+
+  /* ================= HEAD COUNT SCREEN ================= */
+
+  /* ---- Time-of-day pills (which head count session) ---- */
+  .hc-time-row{
+    display:flex;
+    gap:6px;
+    padding:0 18px 12px;
+    flex-shrink:0;
+  }
+  .hc-time-pill{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    font-weight:700;
+    padding:7px 13px;
+    border-radius:100px;
+    background:var(--card);
+    border:1.3px solid var(--line);
+    color:var(--blue-35);
+    opacity:0.6;
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s ease;
+  }
+  .hc-time-pill svg{width:13px;height:13px;flex-shrink:0;}
+  .hc-time-pill.active{
+    opacity:1;
+    background:var(--blue-35);
+    border-color:var(--blue-35);
+    color:#fff;
+    box-shadow:0 6px 14px -6px rgba(0,81,117,0.5);
+  }
+  .hc-time-pill .hc-tick{
+    width:14px;height:14px;border-radius:50%;
+    background:var(--green-78);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .hc-time-pill .hc-tick svg{width:9px;height:9px;color:#fff;}
+  .hc-none-today{
+    padding:0 18px 4px;
+  }
+  .hc-none-today span{
+    font-size:12px;
+    color:#6b8794;
+    font-style:italic;
+  }
+
+  /* ---- Company tab scroller (mirrors the category chips, but horizontally scrollable & single-select) ---- */
+  .company-scroll{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:0 18px 14px;
+    flex-shrink:0;
+    flex-wrap:nowrap;
+    scrollbar-width:none;
+  }
+  .company-scroll::-webkit-scrollbar{display:none;}
+  .company-chip{
+    position:relative;
+    flex-shrink:0;
+    scroll-snap-align:start;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    font-weight:700;
+    padding:8px 14px;
+    border-radius:100px;
+    background:var(--card);
+    border:1.5px solid var(--line);
+    color:var(--blue-35);
+    opacity:0.62;
+    cursor:pointer;
+    user-select:none;
+    transition:all .15s ease;
+    white-space:nowrap;
+  }
+  .company-chip .dot{width:7px;height:7px;border-radius:50%;background:var(--blue-25);flex-shrink:0;}
+  .company-chip.active{
+    opacity:1;
+    background:var(--blue-35);
+    border-color:var(--blue-35);
+    color:#fff;
+    box-shadow:0 6px 14px -6px rgba(0,81,117,0.5);
+  }
+  .company-chip.active .dot{background:#fff;}
+  .company-chip .chip-check{
+    width:15px;height:15px;
+    border-radius:50%;
+    background:var(--green-78);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    margin-left:-2px;
+  }
+  .company-chip .chip-check svg{width:9px;height:9px;color:#fff;}
+
+  .hc-content{
+    flex:1;
+    overflow-y:auto;
+    padding:4px 18px 24px;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+
+  /* ---- Counselors strip ---- */
+  .counselor-block{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:12px 14px;
+    margin-bottom:14px;
+    flex-shrink:0;
+  }
+  .counselor-block h3{
+    margin:0 0 8px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:#6b8794;
+  }
+  .counselor-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+  }
+  .counselor-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink);
+    background:#F1F7F9;
+    border-radius:100px;
+    padding:4px 10px 4px 4px;
+  }
+  .counselor-tag .cav{
+    width:20px;height:20px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:8.5px;
+    font-weight:800;
+    color:#fff;
+    flex-shrink:0;
+  }
+
+  /* ---- Progress bar ---- */
+  .hc-progress-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+    flex-shrink:0;
+  }
+  .hc-progress-label{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--blue-35);
+  }
+  .hc-progress-sub{
+    font-size:11px;
+    color:#6b8794;
+    font-weight:600;
+  }
+  .hc-progress-track{
+    height:7px;
+    border-radius:100px;
+    background:#E1EEF3;
+    overflow:hidden;
+    flex-shrink:0;
+    margin-bottom:16px;
+  }
+  .hc-progress-fill{
+    height:100%;
+    border-radius:100px;
+    background:linear-gradient(90deg, var(--blue-25), var(--green-78));
+    transition:width .3s ease;
+  }
+
+  /* ---- Swipe card stack ---- */
+  .swipe-stage{
+    position:relative;
+    flex:1;
+    min-height:300px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:4px 0 10px;
+  }
+  .swipe-card{
+    position:absolute;
+    inset:0;
+    margin:auto;
+    width:100%;
+    max-width:280px;
+    height:fit-content;
+    background:var(--card);
+    border-radius:26px;
+    box-shadow:var(--shadow);
+    border:1px solid rgba(255,255,255,0.7);
+    padding:34px 20px 26px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    touch-action:none;
+    cursor:grab;
+    user-select:none;
+  }
+  .swipe-card.behind{
+    z-index:1;
+    transform:scale(0.93) translateY(14px);
+    opacity:0.6;
+    pointer-events:none;
+  }
+  .swipe-card.top{ z-index:2; }
+  .swipe-card.flying-right{ transition:transform .32s ease, opacity .32s ease; transform:translate(420px,-30px) rotate(24deg) !important; opacity:0; }
+  .swipe-card.flying-left{ transition:transform .32s ease, opacity .32s ease; transform:translate(-420px,-30px) rotate(-24deg) !important; opacity:0; }
+  .swipe-card.snap-back{ transition:transform .28s cubic-bezier(.2,.9,.3,1.3); }
+
+  .card-avatar{
+    width:112px;height:112px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;
+    font-size:34px;
+    font-weight:600;
+    color:#fff;
+    margin-bottom:16px;
+    box-shadow:0 8px 18px -8px rgba(10,47,66,0.35);
+    flex-shrink:0;
+  }
+  .card-name{
+    font-family:'Fraunces',serif;
+    font-size:21px;
+    font-weight:600;
+    color:var(--ink);
+    margin:0 0 4px;
+  }
+  .card-gender{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:#6b8794;
+  }
+  .card-stamp{
+    position:absolute;
+    top:26px;
+    padding:6px 14px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:800;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    border:3px solid;
+    opacity:0;
+    transform:rotate(-14deg);
+  }
+  .card-stamp.stamp-here{ right:18px; color:var(--green-78); border-color:var(--green-78); transform:rotate(12deg); }
+  .card-stamp.stamp-nope{ left:18px; color:#C8553B; border-color:#C8553B; transform:rotate(-12deg); }
+
+  .swipe-actions{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:26px;
+    padding:6px 0 4px;
+    flex-shrink:0;
+  }
+  .swipe-btn{
+    width:56px;height:56px;
+    border-radius:50%;
+    border:none;
+    background:var(--card);
+    box-shadow:0 8px 18px -8px rgba(10,47,66,0.3);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .swipe-btn:active{ transform:scale(0.9); }
+  .swipe-btn svg{width:24px;height:24px;}
+  .swipe-btn.absent{ color:#C8553B; }
+  .swipe-btn.present{ color:var(--green-78); }
+  .swipe-hint{
+    text-align:center;
+    font-size:11.5px;
+    color:#6b8794;
+    font-weight:600;
+    margin-top:10px;
+    flex-shrink:0;
+  }
+
+  /* ---- Submit / complete states ---- */
+  .hc-complete{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:12px;
+    padding:20px;
+  }
+  .hc-complete .big-tick{
+    width:84px;height:84px;
+    border-radius:50%;
+    background:var(--green-78);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 10px 24px -10px rgba(141,191,103,0.7);
+  }
+  .hc-complete .big-tick svg{width:40px;height:40px;color:#fff;}
+  .hc-complete h3{
+    font-family:'Fraunces',serif;
+    font-size:20px;
+    color:var(--blue-35);
+    margin:0;
+  }
+  .hc-complete p{
+    font-size:13px;
+    color:#5b7c8a;
+    margin:0;
+    max-width:240px;
+    line-height:1.5;
+  }
+  .hc-submit-btn{
+    margin-top:6px;
+    background:var(--blue-35);
+    color:#fff;
+    border:none;
+    padding:14px 30px;
+    border-radius:100px;
+    font-size:14.5px;
+    font-weight:700;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    box-shadow:0 10px 20px -8px rgba(0,81,117,0.5);
+  }
+  .hc-reset-link{
+    background:none; border:none;
+    font-size:11px;
+    color:#9AB0BB;
+    text-decoration:underline;
+    cursor:pointer;
+    margin-top:14px;
+    font-family:'Inter',sans-serif;
+  }
+
+  /* ---- All-companies dashboard ---- */
+  .hc-dash-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    padding-bottom:10px;
+  }
+  .hc-dash-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px;
+    cursor:pointer;
+    transition:transform .12s ease;
+    position:relative;
+  }
+  .hc-dash-card:active{ transform:scale(0.97); }
+  .hc-dash-card .dc-title{
+    font-family:'Fraunces',serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--blue-35);
+    margin-bottom:8px;
+  }
+  .hc-dash-card .dc-status{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:11.5px;
+    font-weight:700;
+  }
+  .hc-dash-card .dc-status.done{ color:var(--green-78); }
+  .hc-dash-card .dc-status.progress{ color:var(--yellow-15); }
+  .hc-dash-card .dc-status.pending{ color:#9AB0BB; }
+  .hc-dash-card .dc-tick{
+    width:18px;height:18px;
+    border-radius:50%;
+    background:var(--green-78);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .hc-dash-card .dc-tick svg{width:10px;height:10px;color:#fff;}
+  .hc-dash-summary{
+    padding:2px 2px 14px;
+    flex-shrink:0;
+  }
+  .hc-dash-summary h2{
+    font-family:'Fraunces',serif;
+    font-size:20px;
+    font-weight:600;
+    margin:0 0 3px;
+    color:var(--blue-35);
+  }
+  .hc-dash-summary span{
+    font-size:12px;
+    color:var(--blue-25);
+    font-weight:600;
+  }
 </style>
 </head>
 <body>
@@ -555,15 +968,13 @@
     </div>
   </div>
 
-  <!-- ============ CHECK IN SCREEN (placeholder) ============ -->
+  <!-- ============ HEAD COUNT SCREEN ============ -->
   <div class="screen" id="screen-checkin">
-    <div class="placeholder">
-      <div class="ph-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
-      </div>
-      <h2>Check In</h2>
-      <p>This tab is coming soon — we'll fill it in next.</p>
-    </div>
+    <div class="day-scroll" id="hc-day-scroll"></div>
+    <div class="hc-time-row" id="hc-time-row"></div>
+    <div class="hc-none-today" id="hc-none-today" style="display:none;"><span>No head count is scheduled for this day.</span></div>
+    <div class="company-scroll" id="company-scroll"></div>
+    <div class="hc-content" id="hc-content"></div>
   </div>
 
   <!-- ============ PHOTOS SCREEN (placeholder) ============ -->
@@ -1060,6 +1471,109 @@ const DAYS = [
   }
 ];
 
+/* ================= HEAD COUNT DATA ================= */
+
+// Times of day (per DAY id) when a Head Count / Meet with Company happens,
+// pulled straight from the schedule above.
+const HEADCOUNT_TIMES = {
+  d0: [],
+  d1: ["5:45 PM", "9:00 PM"],
+  d2: ["1:30 PM", "9:00 PM"],
+  d3: ["1:30 PM", "8:15 PM"],
+  d4: ["1:30 PM", "9:00 PM"],
+  d5: ["1:30 PM", "9:45 PM"],
+  d6: []
+};
+
+const AVATAR_PALETTE_M = ["#007DA5","#005175","#2C4532","#452A23","#571727","#7E93A3"];
+const AVATAR_PALETTE_F = ["#C8553B","#FCB449","#8DBF67","#571727","#452A23","#007DA5"];
+
+const MALE_FIRST = ["Ethan","Liam","Noah","Mason","Caleb","Josh","Tyler","Jacob","Elijah","Wyatt",
+  "Bryson","Kaden","Levi","Gavin","Isaac","Owen","Hunter","Carter","Dallin","Porter",
+  "Jaxon","Bridger","Weston","Grant"];
+const FEMALE_FIRST = ["Emma","Ava","Sophie","Ella","Chloe","Hannah","Addison","Kaylee","Brooklyn","Maddie",
+  "Kenzie","Rylee","Paisley","Claire","Ivy","Josie","Reagan","Piper","Kinsley","Adalyn",
+  "Sadie","Brynlee","Aubree","Lucy"];
+const LAST_NAMES = ["Anderson","Bradshaw","Christensen","Dahl","Erickson","Farnsworth","Griffin","Hansen",
+  "Iverson","Jorgensen","Kimball","Larsen","Merrill","Nielsen","Ostler","Pratt","Quist","Rasmussen",
+  "Sorensen","Taggart","Udall","Vance","Whitmore","Young","Zimmerman","Barlow","Call","Duffin",
+  "Eyring","Fielding","Gardner","Holt","Ipson","Jex","Kartchner","Larkin","Meservy","Nixon"];
+
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function hashStr(s){
+  let h = 0;
+  for(let i=0;i<s.length;i++){ h = (h<<5) - h + s.charCodeAt(i); h |= 0; }
+  return h;
+}
+function shuffled(arr, rng){
+  const a = [...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(rng()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function pick(pool, n, rng){ return shuffled(pool, rng).slice(0, n); }
+function initialsOf(name){ return name.split(' ').map(w=>w[0]).join('').toUpperCase(); }
+function avatarColor(name, gender){
+  const pal = gender === 'F' ? AVATAR_PALETTE_F : AVATAR_PALETTE_M;
+  return pal[Math.abs(hashStr(name)) % pal.length];
+}
+
+// Build 15 companies, each with 8 made-up counselors (4 male / 4 female)
+// and a roster of 20 youth (10 male / 10 female).
+const COMPANIES = [];
+for(let c=1; c<=15; c++){
+  const rng = mulberry32(4200 + c*97);
+  const lastPool = pick(LAST_NAMES, 28, rng);
+  let li = 0;
+
+  const counselors = [
+    ...pick(MALE_FIRST, 4, rng).map(fn => ({ name: `${fn} ${lastPool[li++]}`, gender:'M' })),
+    ...pick(FEMALE_FIRST, 4, rng).map(fn => ({ name: `${fn} ${lastPool[li++]}`, gender:'F' }))
+  ];
+
+  const youth = [
+    ...pick(MALE_FIRST, 10, rng).map((fn,i) => ({ id:`c${c}-m${i}`, name:`${fn} ${lastPool[li++]}`, gender:'M' })),
+    ...pick(FEMALE_FIRST, 10, rng).map((fn,i) => ({ id:`c${c}-f${i}`, name:`${fn} ${lastPool[li++]}`, gender:'F' }))
+  ].map(y => ({ ...y, initials: initialsOf(y.name) }));
+
+  COMPANIES.push({ id:c, counselors, youth });
+}
+
+/* ================= HEAD COUNT STATE ================= */
+let hcActiveDay = "d1";
+let hcActiveTimeIdx = 0;
+let hcActiveCompany = "all";   // "all" or a company id (1-15)
+let hcSessions = {};           // key -> { queue:[ids], confirmed:Set, submitted:bool, total:n }
+
+function hcSessionKey(companyId, dayId, time){ return `${companyId}|${dayId}|${time}`; }
+
+function hcCurrentTime(){
+  const times = HEADCOUNT_TIMES[hcActiveDay] || [];
+  return times[hcActiveTimeIdx] || null;
+}
+
+function hcGetSession(companyId){
+  const time = hcCurrentTime();
+  if(!time) return null;
+  const key = hcSessionKey(companyId, hcActiveDay, time);
+  if(!hcSessions[key]){
+    const company = COMPANIES.find(c => c.id === companyId);
+    const rng = mulberry32(Math.abs(hashStr(key)));
+    const order = shuffled(company.youth.map(y => y.id), rng);
+    hcSessions[key] = { queue: order, confirmed: new Set(), submitted:false, total: order.length };
+  }
+  return hcSessions[key];
+}
+
 /* ================= STATE ================= */
 let activeDay = "d1";
 let activeFilters = new Set(Object.keys(CATS));
@@ -1194,6 +1708,320 @@ function renderTimeline(){
   });
 }
 
+/* ================= HEAD COUNT RENDER ================= */
+const hcDayScroll   = document.getElementById('hc-day-scroll');
+const hcTimeRow     = document.getElementById('hc-time-row');
+const hcNoneToday   = document.getElementById('hc-none-today');
+const companyScroll = document.getElementById('company-scroll');
+const hcContent     = document.getElementById('hc-content');
+
+const ICON_CHECK = '<path d="M20 6L9 17l-5-5"/>';
+const ICON_CLOCK = '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>';
+const ICON_X     = '<path d="M18 6L6 18"/><path d="M6 6l12 12"/>';
+
+function renderHcDayPills(){
+  hcDayScroll.innerHTML = DAYS.map(d => `
+    <div class="day-pill ${d.id===hcActiveDay?'active':''}" data-day="${d.id}">
+      <span class="d-label">${d.label}</span>
+      <span class="d-num">${d.num}</span>
+    </div>
+  `).join('');
+  hcDayScroll.querySelectorAll('.day-pill').forEach(el => {
+    el.addEventListener('click', () => {
+      hcActiveDay = el.dataset.day;
+      hcActiveTimeIdx = 0;
+      renderHcDayPills();
+      renderHcTimeRow();
+      renderCompanyScroll();
+      renderHcContent();
+    });
+  });
+}
+
+function renderHcTimeRow(){
+  const times = HEADCOUNT_TIMES[hcActiveDay] || [];
+  if(times.length === 0){
+    hcTimeRow.style.display = 'none';
+    hcNoneToday.style.display = 'block';
+    hcTimeRow.innerHTML = '';
+    return;
+  }
+  hcNoneToday.style.display = 'none';
+  hcTimeRow.style.display = 'flex';
+  hcTimeRow.innerHTML = times.map((t,i) => {
+    const allDone = COMPANIES.every(c => {
+      const key = hcSessionKey(c.id, hcActiveDay, t);
+      return hcSessions[key] && hcSessions[key].submitted;
+    });
+    return `
+      <div class="hc-time-pill ${i===hcActiveTimeIdx?'active':''}" data-idx="${i}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON_CLOCK}</svg>
+        ${t}
+        ${allDone ? `<span class="hc-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg></span>` : ''}
+      </div>`;
+  }).join('');
+  hcTimeRow.querySelectorAll('.hc-time-pill').forEach(el => {
+    el.addEventListener('click', () => {
+      hcActiveTimeIdx = Number(el.dataset.idx);
+      renderHcTimeRow();
+      renderCompanyScroll();
+      renderHcContent();
+    });
+  });
+}
+
+function renderCompanyScroll(){
+  const time = hcCurrentTime();
+  const chips = [`
+    <div class="company-chip ${hcActiveCompany==='all'?'active':''}" data-company="all">
+      <span class="dot"></span>All
+    </div>`];
+  COMPANIES.forEach(c => {
+    const key = time ? hcSessionKey(c.id, hcActiveDay, time) : null;
+    const submitted = key && hcSessions[key] && hcSessions[key].submitted;
+    chips.push(`
+      <div class="company-chip ${hcActiveCompany===c.id?'active':''}" data-company="${c.id}">
+        <span class="dot"></span>Company ${c.id}
+        ${submitted ? `<span class="chip-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg></span>` : ''}
+      </div>`);
+  });
+  companyScroll.innerHTML = chips.join('');
+  companyScroll.querySelectorAll('.company-chip').forEach(el => {
+    el.addEventListener('click', () => {
+      const v = el.dataset.company;
+      hcActiveCompany = v === 'all' ? 'all' : Number(v);
+      renderCompanyScroll();
+      renderHcContent();
+    });
+  });
+}
+
+function renderHcContent(){
+  const time = hcCurrentTime();
+  if(!time){
+    hcContent.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+        <p>There's no head count scheduled for this day.</p>
+      </div>`;
+    return;
+  }
+  if(hcActiveCompany === 'all'){
+    renderHcDashboard(time);
+  } else {
+    renderHcCompany(hcActiveCompany, time);
+  }
+}
+
+function renderHcDashboard(time){
+  const day = DAYS.find(d => d.id === hcActiveDay);
+  const cards = COMPANIES.map(c => {
+    const key = hcSessionKey(c.id, hcActiveDay, time);
+    const s = hcSessions[key];
+    let statusHtml, cls;
+    if(s && s.submitted){
+      cls = 'done';
+      statusHtml = `<span class="dc-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg></span>Checked in`;
+    } else if(s && s.confirmed.size > 0){
+      cls = 'progress';
+      statusHtml = `${s.confirmed.size} of ${s.total} confirmed`;
+    } else {
+      cls = 'pending';
+      statusHtml = `Not started`;
+    }
+    return `
+      <div class="hc-dash-card" data-company="${c.id}">
+        <div class="dc-title">Company ${c.id}</div>
+        <div class="dc-status ${cls}">${statusHtml}</div>
+      </div>`;
+  }).join('');
+
+  hcContent.innerHTML = `
+    <div class="hc-dash-summary">
+      <h2>${day.title}</h2>
+      <span>${time} head count &middot; all companies</span>
+    </div>
+    <div class="hc-dash-grid">${cards}</div>
+  `;
+  hcContent.querySelectorAll('.hc-dash-card').forEach(el => {
+    el.addEventListener('click', () => {
+      hcActiveCompany = Number(el.dataset.company);
+      renderCompanyScroll();
+      renderHcContent();
+    });
+  });
+}
+
+function renderHcCompany(companyId, time){
+  const company = COMPANIES.find(c => c.id === companyId);
+  const session = hcGetSession(companyId);
+
+  const counselorTags = company.counselors.map(p => `
+    <span class="counselor-tag">
+      <span class="cav" style="background:${avatarColor(p.name,p.gender)}">${initialsOf(p.name)}</span>
+      ${p.name}
+    </span>`).join('');
+
+  let bodyHtml;
+  if(session.submitted){
+    bodyHtml = `
+      <div class="hc-complete">
+        <div class="big-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg></div>
+        <h3>Head Count Complete</h3>
+        <p>All ${session.total} youth in Company ${companyId} are confirmed present for the ${time} head count.</p>
+        <button class="hc-reset-link" id="hc-reset">Start this head count over</button>
+      </div>`;
+  } else if(session.queue.length === 0){
+    bodyHtml = `
+      <div class="hc-complete">
+        <div class="big-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg></div>
+        <h3>All ${session.total} confirmed!</h3>
+        <p>Every youth in Company ${companyId} has been marked present. Submit the head count to lock it in.</p>
+        <button class="hc-submit-btn" id="hc-submit">Submit Head Count</button>
+      </div>`;
+  } else {
+    const nextId = session.queue[0];
+    const behindId = session.queue[1];
+    const next = company.youth.find(y => y.id === nextId);
+    const behind = behindId ? company.youth.find(y => y.id === behindId) : null;
+    const pct = Math.round((session.confirmed.size / session.total) * 100);
+
+    bodyHtml = `
+      <div class="hc-progress-row">
+        <span class="hc-progress-label">${session.confirmed.size} of ${session.total} confirmed</span>
+        <span class="hc-progress-sub">${session.queue.length} remaining</span>
+      </div>
+      <div class="hc-progress-track"><div class="hc-progress-fill" style="width:${pct}%"></div></div>
+
+      <div class="swipe-stage" id="swipe-stage">
+        ${behind ? `
+        <div class="swipe-card behind">
+          <div class="card-avatar" style="background:${avatarColor(behind.name,behind.gender)}">${behind.initials}</div>
+          <p class="card-name">${behind.name}</p>
+          <span class="card-gender">${behind.gender === 'M' ? 'Male' : 'Female'}</span>
+        </div>` : ''}
+        <div class="swipe-card top" id="swipe-card" data-id="${next.id}">
+          <span class="card-stamp stamp-nope" id="stamp-nope">Not Here</span>
+          <span class="card-stamp stamp-here" id="stamp-here">Here!</span>
+          <div class="card-avatar" style="background:${avatarColor(next.name,next.gender)}">${next.initials}</div>
+          <p class="card-name">${next.name}</p>
+          <span class="card-gender">${next.gender === 'M' ? 'Male' : 'Female'}</span>
+        </div>
+      </div>
+
+      <div class="swipe-actions">
+        <button class="swipe-btn absent" id="btn-absent" aria-label="Not present">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${ICON_X}</svg>
+        </button>
+        <button class="swipe-btn present" id="btn-present" aria-label="Present">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg>
+        </button>
+      </div>
+      <p class="swipe-hint">Swipe left if not present &middot; swipe right if present</p>
+    `;
+  }
+
+  hcContent.innerHTML = `
+    <div class="counselor-block">
+      <h3>Counselors &middot; Company ${companyId}</h3>
+      <div class="counselor-list">${counselorTags}</div>
+    </div>
+    ${bodyHtml}
+  `;
+
+  const resetBtn = document.getElementById('hc-reset');
+  if(resetBtn){
+    resetBtn.addEventListener('click', () => {
+      delete hcSessions[hcSessionKey(companyId, hcActiveDay, time)];
+      renderCompanyScroll();
+      renderHcContent();
+    });
+  }
+
+  const submitBtn = document.getElementById('hc-submit');
+  if(submitBtn){
+    submitBtn.addEventListener('click', () => {
+      session.submitted = true;
+      renderHcTimeRow();
+      renderCompanyScroll();
+      renderHcContent();
+    });
+  }
+
+  const card = document.getElementById('swipe-card');
+  if(card){
+    wireSwipeCard(card, companyId, time);
+    document.getElementById('btn-absent').addEventListener('click', () => resolveSwipe(card, companyId, time, 'left'));
+    document.getElementById('btn-present').addEventListener('click', () => resolveSwipe(card, companyId, time, 'right'));
+  }
+}
+
+function resolveSwipe(card, companyId, time, direction){
+  const session = hcGetSession(companyId);
+  const id = session.queue.shift();
+  if(direction === 'right'){
+    session.confirmed.add(id);
+  } else {
+    session.queue.push(id);
+  }
+  card.style.transition = '';
+  card.classList.add(direction === 'right' ? 'flying-right' : 'flying-left');
+  setTimeout(() => {
+    renderCompanyScroll();
+    renderHcContent();
+  }, 220);
+}
+
+function wireSwipeCard(card, companyId, time){
+  const stampHere = document.getElementById('stamp-here');
+  const stampNope = document.getElementById('stamp-nope');
+  const THRESHOLD = 90;
+  let dragging = false;
+  let startX = 0, startY = 0, dx = 0, dy = 0;
+
+  function onDown(e){
+    dragging = true;
+    card.classList.remove('snap-back');
+    card.style.transition = 'none';
+    const p = e.touches ? e.touches[0] : e;
+    startX = p.clientX; startY = p.clientY;
+    card.setPointerCapture && e.pointerId != null && card.setPointerCapture(e.pointerId);
+  }
+  function onMove(e){
+    if(!dragging) return;
+    const p = e.touches ? e.touches[0] : e;
+    dx = p.clientX - startX;
+    dy = p.clientY - startY;
+    const rot = dx / 14;
+    card.style.transform = `translate(${dx}px, ${dy*0.4}px) rotate(${rot}deg)`;
+    const pull = Math.min(Math.abs(dx) / THRESHOLD, 1);
+    if(dx > 0){ stampHere.style.opacity = pull; stampNope.style.opacity = 0; }
+    else { stampNope.style.opacity = pull; stampHere.style.opacity = 0; }
+  }
+  function onUp(){
+    if(!dragging) return;
+    dragging = false;
+    if(dx > THRESHOLD){
+      resolveSwipe(card, companyId, time, 'right');
+    } else if(dx < -THRESHOLD){
+      resolveSwipe(card, companyId, time, 'left');
+    } else {
+      card.style.transition = '';
+      card.classList.add('snap-back');
+      card.style.transform = 'translate(0,0) rotate(0deg)';
+      stampHere.style.opacity = 0;
+      stampNope.style.opacity = 0;
+    }
+    dx = 0; dy = 0;
+  }
+
+  card.addEventListener('pointerdown', onDown);
+  card.addEventListener('pointermove', onMove);
+  card.addEventListener('pointerup', onUp);
+  card.addEventListener('pointercancel', onUp);
+  card.addEventListener('pointerleave', () => { if(dragging) onUp(); });
+}
+
 /* ================= BOTTOM NAV ================= */
 document.querySelectorAll('.nav-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -1209,6 +2037,11 @@ renderDayPills();
 renderFilters();
 renderRoleFilters();
 renderTimeline();
+
+renderHcDayPills();
+renderHcTimeRow();
+renderCompanyScroll();
+renderHcContent();
 </script>
 </body>
 </html>
