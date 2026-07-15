@@ -112,22 +112,29 @@
     margin:0;
     letter-spacing:0.01em;
   }
+  .dress-badge-row{
+    padding:16px 18px 4px;
+    flex-shrink:0;
+  }
   .dress-badge{
-    margin-top:14px;
     display:inline-flex;
     align-items:center;
     gap:7px;
-    background:rgba(255,255,255,0.16);
-    border:1px solid rgba(255,255,255,0.28);
-    backdrop-filter:blur(4px);
+    background:#fff;
+    border:1.5px solid var(--blue-5);
     padding:6px 12px 6px 10px;
     border-radius:100px;
     font-size:12.5px;
-    font-weight:500;
-    position:relative;
-    z-index:2;
+    font-weight:700;
+    color:var(--blue-35);
+    box-shadow:0 3px 10px -5px rgba(0,81,117,0.25);
   }
-  .dress-badge svg{width:14px;height:14px;flex-shrink:0;}
+  .dress-badge svg{width:14px;height:14px;flex-shrink:0; color:var(--blue-25);}
+  .dress-badge .dress-label{
+    color:#6b8794;
+    font-weight:600;
+    margin-right:1px;
+  }
 
   /* ---------- Day selector ---------- */
   .day-scroll{
@@ -203,6 +210,50 @@
   .chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
   .chip.active{opacity:1; border-color:currentColor; }
 
+  /* ---------- Role filter chips (row 2) ---------- */
+  .filters-roles{
+    display:flex;
+    gap:8px;
+    padding:0 18px 16px;
+    flex-wrap:wrap;
+    flex-shrink:0;
+    margin-top:-4px;
+  }
+  .role-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:11.5px;
+    font-weight:600;
+    padding:5px 10px;
+    border-radius:8px;
+    background:var(--card);
+    border:1.3px dashed var(--line);
+    color:var(--ink);
+    opacity:0.55;
+    cursor:pointer;
+    transition:all .15s ease;
+    user-select:none;
+  }
+  .role-chip .sq{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+  .role-chip.active{
+    opacity:1;
+    color:#fff;
+    border-style:solid;
+    border-color:transparent;
+  }
+  .role-chip.active .sq{background:#fff !important;}
+
+  .role-hint{
+    padding:0 18px 14px;
+    margin-top:-6px;
+  }
+  .role-hint span{
+    font-size:11.5px;
+    color:#6b8794;
+    font-style:italic;
+  }
+
   /* ---------- Timeline ---------- */
   .content{
     flex:1;
@@ -277,6 +328,13 @@
     min-width:0;
     padding-top:2px;
   }
+  .event-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .event-head-text{ min-width:0; flex:1; }
   .event-time{
     font-size:11.5px;
     font-weight:700;
@@ -302,6 +360,50 @@
   }
 
   .event.hidden{ display:none; }
+
+  /* expandable role-instruction state */
+  .event.expandable .event-head{ cursor:pointer; }
+  .event.role-inactive{ opacity:0.4; }
+
+  .chevron{
+    flex-shrink:0;
+    width:20px;
+    height:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:3px;
+    color:#9AB0BB;
+    transition:transform .22s ease;
+  }
+  .event.open .chevron{ transform:rotate(180deg); color:var(--blue-35); }
+  .chevron svg{width:14px;height:14px;}
+
+  .event-instruction{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .28s ease, opacity .22s ease, margin-top .22s ease;
+    opacity:0;
+  }
+  .event.open .event-instruction{
+    max-height:260px;
+    opacity:1;
+    margin-top:8px;
+  }
+  .event-instruction-inner{
+    font-size:12px;
+    font-weight:500;
+    line-height:1.5;
+    color:#4E6B78;
+    background:#F1F7F9;
+    border-left:2.5px solid var(--role-color, var(--blue-25));
+    padding:8px 10px;
+    border-radius:0 8px 8px 0;
+  }
+  .event-instruction-inner b{
+    color:var(--role-color, var(--blue-35));
+    font-weight:700;
+  }
 
   .empty-state{
     text-align:center;
@@ -395,15 +497,20 @@
           <h1>Conference Schedule</h1>
         </div>
       </div>
+    </div>
+
+    <div class="dress-badge-row">
       <div class="dress-badge" id="dress-badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l2 2h8l2-2M9 5l-5 4 3 3v9h10v-9l3-3-5-4"/></svg>
-        <span id="dress-text">FSY Staff Shirt</span>
+        <span class="dress-label">Dress:</span><span id="dress-text">FSY Staff Shirt</span>
       </div>
     </div>
 
     <div class="day-scroll" id="day-scroll"></div>
 
     <div class="filters" id="filters"></div>
+    <div class="filters-roles" id="filters-roles"></div>
+    <div class="role-hint" id="role-hint" style="display:none;"><span>Tap an activity to see its instructions for this role.</span></div>
 
     <div class="content">
       <div class="day-meta">
@@ -478,165 +585,178 @@ const CATS = {
   logistics: { label:"Logistics",  color:"#7E93A3", icon:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>' }
 };
 
+/* Role instruction key: "counselor" is populated from the original schedule
+   document's Counselors column. assistantCoordinator / coordinator /
+   sessionDirector are left null until those instructions are supplied. */
+const ROLES = {
+  counselor:            { label:"Counselor",             color:"#143A61" },
+  assistantCoordinator: { label:"Assistant Coordinator",  color:"#571727" },
+  coordinator:          { label:"Coordinator",            color:"#452A23" },
+  sessionDirector:      { label:"Session Director",       color:"#2C4532" }
+};
+
+// shorthand builder: r(counselorText) -> {counselor:"..."} (null = role not involved)
+function r(counselor){ return { counselor: counselor || null }; }
+
 const DAYS = [
   {
     id:"d0", label:"Day", num:"0", title:"Day Zero", sub:"Day before FSY begins", dress:"Sunday Dress",
     events:[
-      ["Time TBD at Facility","Facility/Venue Tour","activity"],
-      ["Time TBD at Facility","Counselor Orientation","logistics"],
-      ["7:00 – 8:00 PM","Session Directing Couple Message","spiritual"],
-      ["8:00 – 8:45 PM","Assistant Coordinator/Counselor Breakout","logistics"],
-      ["8:00 – 8:45 PM","Session Directing Couple/Coordinator Meeting","logistics"],
-      ["8:45 – 9:45 PM","Co-Counselor Interviews & Planning","logistics"]
+      ["Time TBD at Facility","Facility/Venue Tour","activity", r("Tour the venue so you know where to direct participants — reserved facilities, housing, cafeteria, fields, and free-time areas.")],
+      ["Time TBD at Facility","Counselor Orientation","logistics", r("Learn your role and responsibilities as a counselor. Be on time and take notes.")],
+      ["7:00 – 8:00 PM","Session Directing Couple Message","spiritual", r("A mandatory spiritual prep meeting for all staff. Wear Sunday dress, arrive on time, and take notes.")],
+      ["8:00 – 8:45 PM","Assistant Coordinator/Counselor Breakout","logistics", r("Connect with your assistant coordinator and fellow counselors, who will define expectations, help you set goals, and answer questions.")],
+      ["8:00 – 8:45 PM","Session Directing Couple/Coordinator Meeting","logistics", r(null)],
+      ["8:45 – 9:45 PM","Co-Counselor Interviews & Planning","logistics", r("Get your group and company assignments, get to know your co-counselor(s), pick a company meeting spot, set goals, and decide who leads Meet Your Company, Home Evening goal setting, daily gospel study, the reverence & testimony discussion, and Day Five's Company Taking It Home.")]
     ]
   },
   {
     id:"d1", label:"Day", num:"1", title:"Day One", sub:"", dress:"FSY Staff Shirt",
     events:[
-      ["7:30 – 8:20 AM","Staff Breakfast","meal"],
-      ["8:00 – 8:25 AM","Coordinator/Assistant Coordinator Meeting","logistics"],
-      ["8:30 – 9:15 AM","Staff Meeting","logistics"],
-      ["9:15 – 10:00 AM","Co-Counselor Planning","logistics"],
-      ["9:15 – 10:50 AM","Materials Distribution & Orientation Practice","logistics"],
-      ["11:15 AM – 1:00 PM","Check-In","logistics"],
-      ["1:15 – 1:30 PM","Room Checks (if applicable)","logistics"],
-      ["1:30 – 2:20 PM","Meet Your Counselor","activity"],
-      ["2:30 – 3:05 PM","Meet Your Company","activity"],
-      ["3:05 – 3:15 PM","Company Name & Chant","activity"],
-      ["3:30 – 4:30 PM","Orientation","activity"],
-      ["4:45 – 5:15 PM","Coordinator/Assistant Coordinator Meeting","logistics"],
-      ["4:45 – 5:45 PM","Dinner","meal"],
-      ["5:45 PM","Head Count","logistics"],
-      ["6:00 – 6:45 PM","Home Evening Lesson","spiritual"],
-      ["7:00 – 8:00 PM","Home Evening Games","activity"],
-      ["8:00 – 8:45 PM","Home Evening Goal Setting","spiritual"],
-      ["9:00 PM","Head Count","logistics"],
-      ["9:00 – 9:45 PM","Quiet Time","logistics"],
-      ["9:45 – 10:15 PM","Reflect & Review","spiritual"],
-      ["10:30 PM","Lights Out","logistics"],
-      ["10:30 PM","Coordinator/Assistant Coordinator Meeting","logistics"]
+      ["7:30 – 8:20 AM","Staff Breakfast","meal", r("Attend")],
+      ["8:00 – 8:25 AM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)],
+      ["8:30 – 9:15 AM","Staff Meeting","logistics", r("The last staff meeting before the session begins — be on time and note any last-minute agenda changes or announcements.")],
+      ["9:15 – 10:00 AM","Co-Counselor Planning","logistics", r("Plan with your co-counselor how you'll run recurring duties: daily head count, Day One's Meet Your Company and Home Evening, gospel study Days 2–5, Day Two's Dance Guidelines, Day Four's reverence & testimony discussion, and Day Five's goal review, guide activities, and Taking It Home.")],
+      ["9:15 – 10:50 AM","Materials Distribution & Orientation Practice","logistics", r("Help transport check-in materials, organize name tags and wristbands, and sort shirts by size to prepare for a smooth check-in.")],
+      ["11:15 AM – 1:00 PM","Check-In","logistics", r("Be positive and welcoming. Answer questions confidently (send registration or room issues to the solutions table), hand out materials warmly, verify each participant's name, attach wristbands, and remind them to label their handbooks.")],
+      ["1:15 – 1:30 PM","Room Checks (if applicable)","logistics", r("Check rooms for pre-existing damage, report anything urgent to your assistant coordinator right away, and have youth report any new damage immediately.")],
+      ["1:30 – 2:20 PM","Meet Your Counselor","activity", r("Your first meeting with your youth — introduce yourselves, set expectations, and walk through the \"Meet Your Counselor\" checklist in their handbook, having them sign once they understand.")],
+      ["2:30 – 3:05 PM","Meet Your Company","activity", r("Build unity as your company meets each other through icebreaker games, then read your company scripture together and explain your company name.")],
+      ["3:05 – 3:15 PM","Company Name & Chant","activity", r("Teach the company chant you and your co-counselor created, and explain it will be used to dismiss your company throughout the week.")],
+      ["3:30 – 4:30 PM","Orientation","activity", r("Stay on your feet and dancing to build excitement until the coordinators start; sit on an aisle in case youth need the restroom, and cheer enthusiastically to set the tone.")],
+      ["4:45 – 5:15 PM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)],
+      ["4:45 – 5:45 PM","Dinner","meal", r("Eat with your company to build unity, set a good example, and leave the dining area clean.")],
+      ["5:45 PM","Head Count","logistics", r("Take head count at your company spot and report to your assistant coordinator.")],
+      ["6:00 – 6:45 PM","Home Evening Lesson","spiritual", r("Arrive early; have youth get out scriptures, handbook, and a pen before the opening prayer. Stay standing until it starts and take notes for Reflect and Review.")],
+      ["7:00 – 8:00 PM","Home Evening Games","activity", r("Play a game or two from the FSY list (Caterpillar Race, Animal Sounds, Bandage Tag, Poison Stump, etc.), then spend 5–10 minutes debriefing to connect it to gospel principles.")],
+      ["8:00 – 8:45 PM","Home Evening Goal Setting","spiritual", r("Guide your company through \"A Pattern for Growth\" — discover, plan, act, reflect, celebrate — to set company and personal goals for the week.")],
+      ["9:00 PM","Head Count","logistics", r("Take nightly head count and report to your assistant coordinator; remind youth to prep for bed and cover windows if applicable.")],
+      ["9:00 – 9:45 PM","Quiet Time","logistics", r("Let youth relax and get ready for bed. Stay nearby to monitor rooms rather than showering or making calls yourself.")],
+      ["9:45 – 10:15 PM","Reflect & Review","spiritual", r("Guide youth to reflect on the day, share experiences, and record a \"Taking It Home\" action. Stay in FSY attire and let the Spirit lead the discussion.")],
+      ["10:30 PM","Lights Out","logistics", r("Lights out at 10:30 — patrol near your youth's sleeping quarters for 15 minutes after the last light goes off.")],
+      ["10:30 PM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)]
     ]
   },
   {
     id:"d2", label:"Day", num:"2", title:"Day Two", sub:"", dress:"FSY Staff Shirt",
     events:[
-      ["7:00 – 7:10 AM","Assistant Coordinator/Counselor Meeting","logistics"],
-      ["7:15 – 7:30 AM","Participant Morning Devotional","spiritual"],
-      ["7:30 – 8:30 AM","Breakfast","meal"],
-      ["8:30 – 9:30 AM","Gospel Study","spiritual"],
-      ["8:45 – 9:15 AM","Session Directing Couple/Teacher Meeting","logistics"],
-      ["9:45 – 10:30 AM","Session Directing Couple Morning Devotional","spiritual"],
-      ["10:45 AM – 12:30 PM","Classes","activity"],
-      ["12:30 – 1:30 PM","Lunch","meal"],
-      ["12:30 – 1:30 PM","Musical Program Rehearsal","activity"],
-      ["1:30 PM","Head Count / Meet with Company","logistics"],
-      ["1:45 – 3:30 PM","Classes or Session-Specific Activities","activity"],
-      ["1:50 – 2:30 PM","Coordinator/Assistant Coordinator Meeting","logistics"],
-      ["3:30 – 4:30 PM","Participant Free Time","activity"],
-      ["3:30 – 5:00 PM","Variety Show Tryouts","activity"],
-      ["3:30 – 5:00 PM","Musical Program Rehearsal","activity"],
-      ["4:30 – 5:00 PM","Assistant Coordinator/Counselor Meeting","logistics"],
-      ["4:30 – 6:00 PM","Dinner","meal"],
-      ["6:00 – 6:30 PM","Banner & Cheer Prep","activity"],
-      ["6:30 – 6:45 PM","Dance Guidelines","logistics"],
-      ["7:00 – 8:45 PM","Dance","activity"],
-      ["9:00 PM","Meet with Company / Head Count","logistics"],
-      ["9:00 – 9:45 PM","Quiet Time","logistics"],
-      ["9:45 – 10:15 PM","Reflect & Review","spiritual"],
-      ["10:30 PM","Lights Out","logistics"],
-      ["10:30 PM","Coordinator/Assistant Coordinator Meeting","logistics"]
+      ["7:00 – 7:10 AM","Assistant Coordinator/Counselor Meeting","logistics", r("Arrive already dressed and ready for the day. Open with prayer and listen closely for announcements.")],
+      ["7:15 – 7:30 AM","Participant Morning Devotional","spiritual", r("Youth teach each other during this devotional. Afterward, briefly review the day's schedule and remind them to record insights for Reflect and Review.")],
+      ["7:30 – 8:30 AM","Breakfast","meal", r("Eat with your company to build unity and set a good example.")],
+      ["8:30 – 9:30 AM","Gospel Study","spiritual", r("Lead a short scripture lesson at your company spot — one counselor teaches while the other supports — and help tie each day's study back to the week's overall theme.")],
+      ["8:45 – 9:15 AM","Session Directing Couple/Teacher Meeting","logistics", r(null)],
+      ["9:45 – 10:30 AM","Session Directing Couple Morning Devotional","spiritual", r("Have youth ready with scriptures, handbook, and a pen before the opening prayer; stay standing until it begins and take notes.")],
+      ["10:45 AM – 12:30 PM","Classes","activity", r("Sit among your youth rather than with other counselors, modeling respectful, focused behavior.")],
+      ["12:30 – 1:30 PM","Lunch","meal", r("Eat with your company; remind Musical Program participants to eat quickly and head to rehearsal.")],
+      ["12:30 – 1:30 PM","Musical Program Rehearsal","activity", r("Encourage participating youth to eat quickly and go straight to the rehearsal location.")],
+      ["1:30 PM","Head Count / Meet with Company","logistics", r("Take head count at your company spot and give instructions for the rest of the day, including reminders for Musical Program or Variety Show participants.")],
+      ["1:45 – 3:30 PM","Classes or Session-Specific Activities","activity", r("Sit among your youth rather than with other counselors, modeling respectful, focused behavior.")],
+      ["1:50 – 2:30 PM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)],
+      ["3:30 – 4:30 PM","Participant Free Time","activity", r("Not a required duty — a good chance to spend time with your youth and get to know them if you'd like.")],
+      ["3:30 – 5:00 PM","Variety Show Tryouts","activity", r("Review the Variety Show guidelines with youth trying out and remind them to sign up early; selection isn't only about talent but building a varied show.")],
+      ["3:30 – 5:00 PM","Musical Program Rehearsal","activity", r("Encourage participating youth to eat quickly and go straight to the rehearsal location.")],
+      ["4:30 – 5:00 PM","Assistant Coordinator/Counselor Meeting","logistics", r("Required supplemental training and Q&A with your assistant coordinator, except for counselors assigned to Musical Program or Variety Show.")],
+      ["4:30 – 6:00 PM","Dinner","meal", r("Eat with your company to build unity and set a good example.")],
+      ["6:00 – 6:30 PM","Banner & Cheer Prep","activity", r("Only participants may draw on the banner (no names or titles of Deity), and the cheer should run about a minute — counselors help with ideas but don't perform.")],
+      ["6:30 – 6:45 PM","Dance Guidelines","logistics", r("Review the FSY Conference Dance Guidelines with your company before heading to the dance.")],
+      ["7:00 – 8:45 PM","Dance","activity", r("Help maintain dance standards, dance with your youth in groups, encourage — but don't force — participation, and allow restroom or water breaks anytime.")],
+      ["9:00 PM","Meet with Company / Head Count","logistics", r("Take head count and remind youth to prep for bed.")],
+      ["9:00 – 9:45 PM","Quiet Time","logistics", r("Let youth relax and get ready for bed. Stay nearby to monitor rooms rather than showering or making calls yourself.")],
+      ["9:45 – 10:15 PM","Reflect & Review","spiritual", r("Guide youth to reflect on the day, share experiences, and record a \"Taking It Home\" action. Stay in FSY attire and let the Spirit lead the discussion.")],
+      ["10:30 PM","Lights Out","logistics", r("Lights out at 10:30 — patrol near your youth's sleeping quarters for 15 minutes after the last light goes off.")],
+      ["10:30 PM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)]
     ]
   },
   {
     id:"d3", label:"Day", num:"3", title:"Day Three", sub:"", dress:"FSY Staff Shirt",
     events:[
-      ["7:00 – 7:10 AM","Assistant Coordinator/Counselor Meeting","logistics"],
-      ["7:15 – 7:30 AM","Participant Morning Devotional","spiritual"],
-      ["7:30 – 8:30 AM","Breakfast","meal"],
-      ["8:30 – 9:30 AM","Gospel Study","spiritual"],
-      ["9:45 – 10:30 AM","Session Directing Couple Morning Devotional","spiritual"],
-      ["10:45 AM – 12:30 PM","Classes or Session-Specific Activity","activity"],
-      ["12:30 – 1:30 PM","Lunch","meal"],
-      ["12:30 – 1:30 PM","Musical Program Rehearsal","activity"],
-      ["1:30 PM","Head Count / Meet with Company","logistics"],
-      ["1:45 – 3:30 PM","Classes or Session-Specific Activities","activity"],
-      ["1:50 – 2:30 PM","Coordinator/Assistant Coordinator Meeting","logistics"],
-      ["3:30 – 4:30 PM","Participant Free Time","activity"],
-      ["3:30 – 5:00 PM","Variety Show Tryouts","activity"],
-      ["3:30 – 5:00 PM","Musical Program Rehearsal","activity"],
-      ["4:30 – 5:00 PM","Assistant Coordinator/Counselor Meeting","logistics"],
-      ["4:30 – 6:00 PM","Dinner","meal"],
-      ["6:00 – 6:30 PM","Games Night Prep","activity"],
-      ["6:45 – 8:00 PM","Games Night & Cheer-Off","activity"],
-      ["8:15 PM","Meet with Company / Head Count","logistics"],
-      ["8:15 – 9:00 PM","Favorite Food Night","activity"],
-      ["9:00 – 9:45 PM","Quiet Time","logistics"],
-      ["9:45 – 10:15 PM","Reflect & Review","spiritual"],
-      ["10:30 PM","Lights Out","logistics"],
-      ["10:30 PM","Coordinator/Assistant Coordinator Meeting","logistics"]
+      ["7:00 – 7:10 AM","Assistant Coordinator/Counselor Meeting","logistics", r("Arrive already dressed and ready for the day. Open with prayer and listen closely for announcements.")],
+      ["7:15 – 7:30 AM","Participant Morning Devotional","spiritual", r("Youth teach each other during this devotional. Afterward, briefly review the day's schedule and remind them to record insights for Reflect and Review.")],
+      ["7:30 – 8:30 AM","Breakfast","meal", r("Eat with your company to build unity and set a good example.")],
+      ["8:30 – 9:30 AM","Gospel Study","spiritual", r("Lead a short scripture lesson at your company spot — one counselor teaches while the other supports — and help tie each day's study back to the week's overall theme.")],
+      ["9:45 – 10:30 AM","Session Directing Couple Morning Devotional","spiritual", r("Have youth ready with scriptures, handbook, and a pen before the opening prayer; stay standing until it begins and take notes.")],
+      ["10:45 AM – 12:30 PM","Classes or Session-Specific Activity","activity", r("Sit among your youth rather than with other counselors, modeling respectful, focused behavior.")],
+      ["12:30 – 1:30 PM","Lunch","meal", r("Eat with your company; remind Musical Program participants to eat quickly and head to rehearsal.")],
+      ["12:30 – 1:30 PM","Musical Program Rehearsal","activity", r("Encourage participating youth to eat quickly and go straight to the rehearsal location.")],
+      ["1:30 PM","Head Count / Meet with Company","logistics", r("Take head count at your company spot and give instructions for the rest of the day.")],
+      ["1:45 – 3:30 PM","Classes or Session-Specific Activities","activity", r("Sit among your youth rather than with other counselors, modeling respectful, focused behavior.")],
+      ["1:50 – 2:30 PM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)],
+      ["3:30 – 4:30 PM","Participant Free Time","activity", r("Not a required duty — a good chance to spend time with your youth and get to know them if you'd like.")],
+      ["3:30 – 5:00 PM","Variety Show Tryouts","activity", r("Review the Variety Show guidelines with youth trying out and remind them to sign up early; selection isn't only about talent but building a varied show.")],
+      ["3:30 – 5:00 PM","Musical Program Rehearsal","activity", r("Encourage participating youth to eat quickly and go straight to the rehearsal location.")],
+      ["4:30 – 5:00 PM","Assistant Coordinator/Counselor Meeting","logistics", r("Required supplemental training and Q&A with your assistant coordinator, except for counselors assigned to Musical Program or Variety Show.")],
+      ["4:30 – 6:00 PM","Dinner","meal", r("Eat with your company to build unity and set a good example.")],
+      ["6:00 – 6:30 PM","Games Night Prep","activity", r("Be ready to teach every game by demonstrating with a couple of volunteers; practice your cheer once more and leave enough time to reach the field.")],
+      ["6:45 – 8:00 PM","Games Night & Cheer-Off","activity", r("Focus on unity, not competition. Check in with your assigned assistant coordinator on the field, keep your company engaged between games, and stay together as judges review cheers for the Cheer-Off.")],
+      ["8:15 PM","Meet with Company / Head Count","logistics", r("Take head count; make sure everyone is wearing their participant T-shirt for Games Night.")],
+      ["8:15 – 9:00 PM","Favorite Food Night","activity", r("A small, uplifting gathering near your youth's sleeping quarters — keep the mood positive, calm things down before Reflect and Review, and clean up after.")],
+      ["9:00 – 9:45 PM","Quiet Time","logistics", r("Let youth relax and get ready for bed. Stay nearby to monitor rooms rather than showering or making calls yourself.")],
+      ["9:45 – 10:15 PM","Reflect & Review","spiritual", r("Guide youth to reflect on the day, share experiences, and record a \"Taking It Home\" action. Stay in FSY attire and let the Spirit lead the discussion.")],
+      ["10:30 PM","Lights Out","logistics", r("Lights out at 10:30 — patrol near your youth's sleeping quarters for 15 minutes after the last light goes off.")],
+      ["10:30 PM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)]
     ]
   },
   {
     id:"d4", label:"Day", num:"4", title:"Day Four", sub:"", dress:"Sunday Dress",
     events:[
-      ["7:00 – 7:10 AM","Assistant Coordinator/Counselor Meeting","logistics"],
-      ["7:15 – 7:30 AM","Participant Morning Devotional","spiritual"],
-      ["7:30 – 8:30 AM","Breakfast","meal"],
-      ["8:30 – 9:30 AM","Gospel Study","spiritual"],
-      ["9:45 AM – 12:30 PM","Young Men & Young Women Devotionals","spiritual"],
-      ["9:45 AM – 12:30 PM","Young Men & Young Women Activities","activity"],
-      ["12:30 – 1:30 PM","Lunch","meal"],
-      ["12:30 – 1:45 PM","Variety Show Dress Rehearsal","activity"],
-      ["12:30 – 1:30 PM","Musical Program Rehearsal","activity"],
-      ["1:30 PM","Head Count / Meet with Company","logistics"],
-      ["1:45 – 2:00 PM","Variety Show Guidelines","logistics"],
-      ["2:15 – 3:30 PM","Variety Show","activity"],
-      ["3:30 – 4:30 PM","Participant Free Time","activity"],
-      ["3:30 – 5:00 PM","Musical Program Dress Rehearsal","activity"],
-      ["3:30 – 4:00 PM","Coordinator/Assistant Coordinator Meeting","logistics"],
-      ["4:30 – 5:50 PM","Dinner","meal"],
-      ["5:50 – 6:05 PM","Reverence & Testimony Discussion","spiritual"],
-      ["6:20 – 7:40 PM","Musical Program & Evening Devotional","spiritual"],
-      ["7:50 – 8:50 PM","Testimony Meetings","spiritual"],
-      ["9:00 PM","Meet with Company / Head Count","logistics"],
-      ["9:00 – 9:45 PM","Quiet Time","logistics"],
-      ["9:45 – 10:15 PM","Reflect & Review","spiritual"],
-      ["10:30 PM","Lights Out","logistics"],
-      ["10:30 PM","Coordinator/Assistant Coordinator Meeting","logistics"]
+      ["7:00 – 7:10 AM","Assistant Coordinator/Counselor Meeting","logistics", r("Arrive already dressed and ready for the day. Open with prayer and listen closely for announcements.")],
+      ["7:15 – 7:30 AM","Participant Morning Devotional","spiritual", r("Remind Variety Show participants to bring their props and costumes to today's dress rehearsal.")],
+      ["7:30 – 8:30 AM","Breakfast","meal", r("Eat with your company to build unity and set a good example.")],
+      ["8:30 – 9:30 AM","Gospel Study","spiritual", r("Lead a short scripture lesson at your company spot — one counselor teaches while the other supports — and help tie each day's study back to the week's overall theme.")],
+      ["9:45 AM – 12:30 PM","Young Men & Young Women Devotionals","spiritual", r("Your company splits by gender and rotates between this devotional and the Young Men/Young Women Activity — have youth get out scriptures, handbook, and a pen before the opening prayer.")],
+      ["9:45 AM – 12:30 PM","Young Men & Young Women Activities","activity", r("Lead your breakout group through the Book of Mormon discussion and application activity, closing with a brief testimony and prayer to help build faith in the Book of Mormon and Joseph Smith.")],
+      ["12:30 – 1:30 PM","Lunch","meal", r("Eat with your company; remind everyone when and where to meet after lunch for the Variety Show.")],
+      ["12:30 – 1:45 PM","Variety Show Dress Rehearsal","activity", r("Performing youth should eat quickly, dress as they will for the actual show, and tune instruments or finish preparations during rehearsal.")],
+      ["12:30 – 1:30 PM","Musical Program Rehearsal","activity", r("Encourage participating youth to eat quickly and go straight to the rehearsal location.")],
+      ["1:30 PM","Head Count / Meet with Company","logistics", r("Take head count at your company spot and give instructions for the rest of the day.")],
+      ["1:45 – 2:00 PM","Variety Show Guidelines","logistics", r("Review the audience guidelines with your company before the show.")],
+      ["2:15 – 3:30 PM","Variety Show","activity", r("Sit with your youth and remind them to be supportive and respectful of the performers.")],
+      ["3:30 – 4:30 PM","Participant Free Time","activity", r("Not a required duty — a good chance to spend time with your youth and get to know them if you'd like.")],
+      ["3:30 – 5:00 PM","Musical Program Dress Rehearsal","activity", r("Encourage participating youth to eat quickly and go straight to the rehearsal location.")],
+      ["3:30 – 4:00 PM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)],
+      ["4:30 – 5:50 PM","Dinner","meal", r("Some youth need to eat quickly for the Musical Program — know who's singing so you can keep the rest of your group on schedule.")],
+      ["5:50 – 6:05 PM","Reverence & Testimony Discussion","spiritual", r("Sing a hymn and read Doctrine and Covenants 88:67–68 together, then discuss what reverence means and how it invites revelation, using \"A Testimony of the Gospel\" in the handbook.")],
+      ["6:20 – 7:40 PM","Musical Program & Evening Devotional","spiritual", r("Sit with your company and help maintain a reverent atmosphere during the program and devotional.")],
+      ["7:50 – 8:50 PM","Testimony Meetings","spiritual", r("Your assistant coordinator will tell you where your company meets and who conducts — help your youth stay reverent and focused on the Spirit.")],
+      ["9:00 PM","Meet with Company / Head Count","logistics", r("Take head count and remind youth to prep for bed.")],
+      ["9:00 – 9:45 PM","Quiet Time","logistics", r("Let youth relax and get ready for bed. Stay nearby to monitor rooms rather than showering or making calls yourself.")],
+      ["9:45 – 10:15 PM","Reflect & Review","spiritual", r("Guide youth to reflect on the day, share experiences, and record a \"Taking It Home\" action. Stay in FSY attire and let the Spirit lead the discussion.")],
+      ["10:30 PM","Lights Out","logistics", r("Lights out at 10:30 — patrol near your youth's sleeping quarters for 15 minutes after the last light goes off.")],
+      ["10:30 PM","Coordinator/Assistant Coordinator Meeting","logistics", r(null)]
     ]
   },
   {
     id:"d5", label:"Day", num:"5", title:"Day Five", sub:"", dress:"FSY Staff Shirt",
     events:[
-      ["7:00 – 7:10 AM","Assistant Coordinator/Counselor Meeting","logistics"],
-      ["7:15 – 7:30 AM","Participant Morning Devotional","spiritual"],
-      ["7:30 – 8:30 AM","Breakfast","meal"],
-      ["8:30 – 9:30 AM","Gospel Study","spiritual"],
-      ["9:30 – 10:00 AM","Goal Setting Review","spiritual"],
-      ["10:15 – 11:00 AM","Session Directing Couple Morning Devotional","spiritual"],
-      ["11:15 AM – 12:30 PM","For the Strength of Youth Guide Activity","activity"],
-      ["12:30 – 1:30 PM","Lunch","meal"],
-      ["1:30 PM","Head Count / Meet with Company","logistics"],
-      ["1:45 – 3:00 PM","Living the Gospel Activity","activity"],
-      ["3:00 – 3:15 PM","Slide Show","activity"],
-      ["3:15 – 4:30 PM","Participant Free Time","activity"],
-      ["4:30 – 6:00 PM","Dinner","meal"],
-      ["6:00 – 6:15 PM","Picture Taking","activity"],
-      ["6:15 – 8:00 PM","Dance","activity"],
-      ["8:15 – 8:45 PM","Taking It Home Message","spiritual"],
-      ["9:00 – 9:30 PM","Company Taking It Home","spiritual"],
-      ["9:45 PM","Meet with Company / Head Count","logistics"],
-      ["9:45 – 10:25 PM","Quiet Time","logistics"],
-      ["10:25 PM","Prayer","spiritual"],
-      ["10:30 PM","Lights Out / Night Watch","logistics"]
+      ["7:00 – 7:10 AM","Assistant Coordinator/Counselor Meeting","logistics", r("Arrive already dressed and ready for the day. Open with prayer and listen closely for announcements.")],
+      ["7:15 – 7:30 AM","Participant Morning Devotional","spiritual", r("Youth teach each other during this devotional. Afterward, briefly review the day's schedule and remind them to record insights for Reflect and Review.")],
+      ["7:30 – 8:30 AM","Breakfast","meal", r("Eat with your company to build unity and set a good example.")],
+      ["8:30 – 9:30 AM","Gospel Study","spiritual", r("Lead a short scripture lesson at your company spot — one counselor teaches while the other supports.")],
+      ["9:30 – 10:00 AM","Goal Setting Review","spiritual", r("Run a quick object lesson (partners spot a changed detail about each other) to open a discussion on the goal-setting process and staying on the covenant path.")],
+      ["10:15 – 11:00 AM","Session Directing Couple Morning Devotional","spiritual", r("Have youth ready with scriptures, handbook, and a pen before the opening prayer; stay standing until it begins and take notes.")],
+      ["11:15 AM – 12:30 PM","For the Strength of Youth Guide Activity","activity", r("An assistant coordinator introduces it, then you lead your company through the \"Ships and Sailors\" game and a guided look at the guide, helping youth apply its principles without dwelling on past versions.")],
+      ["12:30 – 1:30 PM","Lunch","meal", r("Eat with your company at your predetermined spot; take head count and give any announcements.")],
+      ["1:30 PM","Head Count / Meet with Company","logistics", r("Take head count at your company spot and give instructions for the rest of the day.")],
+      ["1:45 – 3:00 PM","Living the Gospel Activity","activity", r("Lead youth through family-history and ministering activities, including a \"Blob Tag\" game. Have them sign your company banner as they complete tasks, and help them plan how to keep it going at home.")],
+      ["3:00 – 3:15 PM","Slide Show","activity", r("Photos taken of your youth through the week are shown — send any you've taken to the assistant coordinator running the slide show.")],
+      ["3:15 – 4:30 PM","Participant Free Time","activity", r("Not a required duty — a good chance to spend time with your youth and get to know them if you'd like.")],
+      ["4:30 – 6:00 PM","Dinner","meal", r("Eat with your company to build unity and set a good example.")],
+      ["6:00 – 6:15 PM","Picture Taking","activity", r("Give your company time to take pictures together and exchange contact info if they'd like to stay in touch.")],
+      ["6:15 – 8:00 PM","Dance","activity", r("Help maintain dance standards, dance with your youth in groups, encourage — but don't force — participation, and allow restroom or water breaks anytime.")],
+      ["8:15 – 8:45 PM","Taking It Home Message","spiritual", r("Led by the session directing couple — sit with your youth, encourage note-taking, and prepare to help them set goals afterward using the \"Do and Become Invitation\" and \"A Pattern for Growth.\"")],
+      ["9:00 – 9:30 PM","Company Taking It Home","spiritual", r("Discuss the Taking It Home message, then guide personal goal setting and sharing — keep it uplifting, brief, and focused on what youth will do at home.")],
+      ["9:45 PM","Meet with Company / Head Count","logistics", r("Take head count and remind youth to prep for bed.")],
+      ["9:45 – 10:25 PM","Quiet Time","logistics", r("Let youth relax and get ready for bed. Lights out on Day Five is strictly enforced, so help them wrap up on time.")],
+      ["10:25 PM","Prayer","spiritual", r("Close the night together in prayer before youth return to their rooms.")],
+      ["10:30 PM","Lights Out / Night Watch","logistics", r("Lights out is strictly enforced tonight. If assigned to night watch, patrol to make sure all youth stay in their sleeping quarters.")]
     ]
   },
   {
     id:"d6", label:"Depart", num:"6", title:"Departure Day", sub:"Head for home", dress:"Travel Clothes",
     events:[
-      ["6:30 – 7:00 AM","Prepare to Leave","logistics"],
-      ["7:00 – 7:30 AM","Post-Session Room Checks / Participant Checkout","logistics"],
-      ["7:30 – 8:00 AM","Staff Wrap-Up Meeting","logistics"]
+      ["6:30 – 7:00 AM","Prepare to Leave","logistics", r("Get yourself and your things ready so you're free to help with checkout.")],
+      ["7:00 – 7:30 AM","Post-Session Room Checks / Participant Checkout","logistics", r("Inspect rooms with your youth, collect keys, document any damage, and make sure all belongings are out before locking up. Stay with anyone checking out early until their ride arrives.")],
+      ["7:30 – 8:00 AM","Staff Wrap-Up Meeting","logistics", r("Mandatory for all counselors — turn in keys and damage reports, and join the discussion reviewing the conference.")]
     ]
   }
 ];
@@ -644,10 +764,14 @@ const DAYS = [
 /* ================= STATE ================= */
 let activeDay = "d1";
 let activeFilters = new Set(Object.keys(CATS));
+let activeRole = null;          // key from ROLES, or null = none selected
+let openEvents = new Set();     // indices (within visible list) currently expanded
 
 /* ================= RENDER ================= */
 const dayScroll = document.getElementById('day-scroll');
 const filtersEl = document.getElementById('filters');
+const roleFiltersEl = document.getElementById('filters-roles');
+const roleHintEl = document.getElementById('role-hint');
 const timelineEl = document.getElementById('timeline');
 const dayTitleEl = document.getElementById('day-title');
 const dayCountEl = document.getElementById('day-count');
@@ -663,6 +787,7 @@ function renderDayPills(){
   dayScroll.querySelectorAll('.day-pill').forEach(el=>{
     el.addEventListener('click', ()=>{
       activeDay = el.dataset.day;
+      openEvents.clear();
       renderDayPills();
       renderTimeline();
     });
@@ -689,6 +814,25 @@ function renderFilters(){
   });
 }
 
+function renderRoleFilters(){
+  roleFiltersEl.innerHTML = Object.entries(ROLES).map(([key,rl])=>`
+    <div class="role-chip ${activeRole===key?'active':''}" data-role="${key}"
+         style="${activeRole===key ? `background:${rl.color};` : `color:${rl.color};`}">
+      <span class="sq" style="background:${rl.color}"></span>${rl.label}
+    </div>
+  `).join('');
+  roleFiltersEl.querySelectorAll('.role-chip').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const role = el.dataset.role;
+      activeRole = (activeRole === role) ? null : role; // single-select, tap again to clear
+      openEvents.clear();
+      renderRoleFilters();
+      renderTimeline();
+    });
+  });
+  roleHintEl.style.display = activeRole ? 'block' : 'none';
+}
+
 function renderTimeline(){
   const day = DAYS.find(d=>d.id===activeDay);
   dayTitleEl.textContent = day.title;
@@ -706,20 +850,49 @@ function renderTimeline(){
     return;
   }
 
-  timelineEl.innerHTML = visible.map(([time,title,cat],i) => {
+  timelineEl.innerHTML = visible.map(([time,title,cat,roles],i) => {
     const c = CATS[cat];
+    const roleInfo = activeRole ? ROLES[activeRole] : null;
+    const instruction = activeRole ? roles[activeRole] : null;
+    const isExpandable = !!(activeRole && instruction);
+    const isRoleTracked = !!activeRole;
+    const isOpen = openEvents.has(i);
+
+    const stateClasses = [
+      isExpandable ? 'expandable' : '',
+      isOpen && isExpandable ? 'open' : '',
+      (isRoleTracked && !isExpandable) ? 'role-inactive' : ''
+    ].filter(Boolean).join(' ');
+
     return `
-      <div class="event" style="animation-delay:${Math.min(i*0.035,0.4)}s">
+      <div class="event ${stateClasses}" data-idx="${i}" style="animation-delay:${Math.min(i*0.035,0.4)}s; ${roleInfo?`--role-color:${roleInfo.color};`:''}">
         <div class="event-dot" style="border-color:${c.color}44;">
           <svg viewBox="0 0 24 24" fill="none" stroke="${c.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${c.icon}</svg>
         </div>
         <div class="event-body">
-          <div class="event-time">${time}</div>
-          <div class="event-title">${title}</div>
-          <span class="event-tag" style="background:${c.color}1F; color:${c.color}">${c.label}</span>
+          <div class="event-head">
+            <div class="event-head-text">
+              <div class="event-time">${time}</div>
+              <div class="event-title">${title}</div>
+              <span class="event-tag" style="background:${c.color}1F; color:${c.color}">${c.label}</span>
+            </div>
+            ${isExpandable ? `<div class="chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>` : ''}
+          </div>
+          ${isExpandable ? `
+          <div class="event-instruction">
+            <div class="event-instruction-inner"><b>${roleInfo.label}:</b> ${instruction}</div>
+          </div>` : ''}
         </div>
       </div>`;
   }).join('');
+
+  timelineEl.querySelectorAll('.event.expandable').forEach(el=>{
+    el.querySelector('.event-head').addEventListener('click', ()=>{
+      const idx = Number(el.dataset.idx);
+      if(openEvents.has(idx)){ openEvents.delete(idx); } else { openEvents.add(idx); }
+      renderTimeline();
+    });
+  });
 }
 
 /* ================= BOTTOM NAV ================= */
@@ -735,6 +908,7 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 /* ================= INIT ================= */
 renderDayPills();
 renderFilters();
+renderRoleFilters();
 renderTimeline();
 </script>
 </body>
