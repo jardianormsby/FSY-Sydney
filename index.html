@@ -600,24 +600,36 @@
     background:var(--card);
     border:1px solid var(--line);
     border-radius:16px;
-    padding:12px 14px;
+    padding:12px 0 12px 14px;
     margin-bottom:14px;
     flex-shrink:0;
   }
   .counselor-block h3{
     margin:0 0 8px;
+    padding-right:14px;
     font-size:11px;
     font-weight:700;
     letter-spacing:0.08em;
     text-transform:uppercase;
     color:#6b8794;
   }
+  .counselor-block .cb-hint{
+    margin:2px 14px 8px 0;
+    font-size:11px;
+    color:var(--yellow-15);
+    font-weight:700;
+  }
   .counselor-list{
     display:flex;
-    flex-wrap:wrap;
+    flex-wrap:nowrap;
     gap:7px;
+    overflow-x:auto;
+    padding-right:14px;
+    scrollbar-width:none;
   }
+  .counselor-list::-webkit-scrollbar{display:none;}
   .counselor-tag{
+    flex-shrink:0;
     display:inline-flex;
     align-items:center;
     gap:6px;
@@ -625,8 +637,19 @@
     font-weight:600;
     color:var(--ink);
     background:#F1F7F9;
+    border:1.5px solid transparent;
     border-radius:100px;
     padding:4px 10px 4px 4px;
+    white-space:nowrap;
+    user-select:none;
+  }
+  .counselor-tag.selectable{ cursor:pointer; transition:all .15s ease; }
+  .counselor-tag.selectable:active{ transform:scale(0.96); }
+  .counselor-tag.selectable.active{
+    background:var(--blue-35);
+    border-color:var(--blue-35);
+    color:#fff;
+    padding-right:8px;
   }
   .counselor-tag .cav{
     width:20px;height:20px;
@@ -637,6 +660,15 @@
     color:#fff;
     flex-shrink:0;
   }
+  .counselor-tag .ctag-check{
+    width:14px;height:14px;
+    border-radius:50%;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+    margin-left:1px;
+  }
+  .counselor-tag .ctag-check svg{width:9px;height:9px;color:var(--blue-35);}
 
   /* ---- Progress bar ---- */
   .hc-progress-row{
@@ -842,27 +874,44 @@
 
   /* ---- All-companies dashboard ---- */
   .hc-dash-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
+    display:flex;
+    flex-direction:column;
     gap:10px;
     padding-bottom:10px;
   }
   .hc-dash-card{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
     background:var(--card);
     border:1px solid var(--line);
     border-radius:16px;
-    padding:14px;
+    padding:15px 16px;
     cursor:pointer;
     transition:transform .12s ease;
     position:relative;
   }
-  .hc-dash-card:active{ transform:scale(0.97); }
+  .hc-dash-card:active{ transform:scale(0.98); }
+  .hc-dash-card .dc-left{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    min-width:0;
+  }
   .hc-dash-card .dc-title{
     font-family:'Fraunces',serif;
-    font-size:15px;
+    font-size:16px;
     font-weight:600;
     color:var(--blue-35);
-    margin-bottom:8px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .hc-dash-card .dc-sub{
+    font-size:11px;
+    font-weight:600;
+    color:#9AB0BB;
   }
   .hc-dash-card .dc-status{
     display:flex;
@@ -870,6 +919,7 @@
     gap:6px;
     font-size:11.5px;
     font-weight:700;
+    flex-shrink:0;
   }
   .hc-dash-card .dc-status.done{ color:var(--green-78); }
   .hc-dash-card .dc-status.progress{ color:var(--yellow-15); }
@@ -1485,6 +1535,13 @@ const HEADCOUNT_TIMES = {
   d6: []
 };
 
+const COMPANY_NAMES = {
+  1:"Iron Rod Rangers", 2:"Stripling Strong", 3:"Covenant Crew", 4:"Tree of Life Tribe",
+  5:"Zion's Trailblazers", 6:"Liahona Legends", 7:"Faith Forward", 8:"Anchor of Hope",
+  9:"Light Chasers", 10:"Living Water Co.", 11:"Mountain Movers", 12:"Armor Up",
+  13:"Firm Foundation", 14:"Good Ground Group", 15:"Joyful Journey"
+};
+
 const AVATAR_PALETTE_M = ["#007DA5","#005175","#2C4532","#452A23","#571727","#7E93A3"];
 const AVATAR_PALETTE_F = ["#C8553B","#FCB449","#8DBF67","#571727","#452A23","#007DA5"];
 
@@ -1569,7 +1626,7 @@ function hcGetSession(companyId){
     const company = COMPANIES.find(c => c.id === companyId);
     const rng = mulberry32(Math.abs(hashStr(key)));
     const order = shuffled(company.youth.map(y => y.id), rng);
-    hcSessions[key] = { queue: order, confirmed: new Set(), submitted:false, total: order.length };
+    hcSessions[key] = { queue: order, confirmed: new Set(), submitted:false, total: order.length, counselor: null };
   }
   return hcSessions[key];
 }
@@ -1718,6 +1775,7 @@ const hcContent     = document.getElementById('hc-content');
 const ICON_CHECK = '<path d="M20 6L9 17l-5-5"/>';
 const ICON_CLOCK = '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>';
 const ICON_X     = '<path d="M18 6L6 18"/><path d="M6 6l12 12"/>';
+const ICON_USER  = '<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/>';
 
 function renderHcDayPills(){
   hcDayScroll.innerHTML = DAYS.map(d => `
@@ -1831,7 +1889,10 @@ function renderHcDashboard(time){
     }
     return `
       <div class="hc-dash-card" data-company="${c.id}">
-        <div class="dc-title">Company ${c.id}</div>
+        <div class="dc-left">
+          <div class="dc-title">${COMPANY_NAMES[c.id]}</div>
+          <div class="dc-sub">Company ${c.id}</div>
+        </div>
         <div class="dc-status ${cls}">${statusHtml}</div>
       </div>`;
   }).join('');
@@ -1857,10 +1918,15 @@ function renderHcCompany(companyId, time){
   const session = hcGetSession(companyId);
 
   const counselorTags = company.counselors.map(p => `
-    <span class="counselor-tag">
+    <div class="counselor-tag selectable ${session.counselor===p.name?'active':''}" data-name="${p.name}">
       <span class="cav" style="background:${avatarColor(p.name,p.gender)}">${initialsOf(p.name)}</span>
       ${p.name}
-    </span>`).join('');
+      ${session.counselor===p.name ? `<span class="ctag-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg></span>` : ''}
+    </div>`).join('');
+
+  const counselorHint = session.counselor
+    ? ''
+    : `<p class="cb-hint">Select a counselor before starting the head count</p>`;
 
   let bodyHtml;
   if(session.submitted){
@@ -1868,8 +1934,15 @@ function renderHcCompany(companyId, time){
       <div class="hc-complete">
         <div class="big-tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${ICON_CHECK}</svg></div>
         <h3>Head Count Complete</h3>
-        <p>All ${session.total} youth in Company ${companyId} are confirmed present for the ${time} head count.</p>
+        <p>All ${session.total} youth in Company ${companyId} are confirmed present for the ${time} head count.${session.counselor ? ` Recorded by <b>${session.counselor}</b>.` : ''}</p>
         <button class="hc-reset-link" id="hc-reset">Start this head count over</button>
+      </div>`;
+  } else if(!session.counselor){
+    bodyHtml = `
+      <div class="hc-complete">
+        <div class="big-tick" style="background:var(--blue-25);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${ICON_USER}</svg></div>
+        <h3>Who's taking this head count?</h3>
+        <p>Tap your name above to start checking in Company ${companyId}'s youth.</p>
       </div>`;
   } else if(session.queue.length === 0){
     bodyHtml = `
@@ -1925,9 +1998,18 @@ function renderHcCompany(companyId, time){
     <div class="counselor-block">
       <h3>Counselors &middot; Company ${companyId}</h3>
       <div class="counselor-list">${counselorTags}</div>
+      ${counselorHint}
     </div>
     ${bodyHtml}
   `;
+
+  hcContent.querySelectorAll('.counselor-tag.selectable').forEach(el => {
+    el.addEventListener('click', () => {
+      if(session.submitted) return;
+      session.counselor = el.dataset.name;
+      renderHcContent();
+    });
+  });
 
   const resetBtn = document.getElementById('hc-reset');
   if(resetBtn){
