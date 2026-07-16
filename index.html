@@ -3107,6 +3107,8 @@ function renderDirDetail(person){
   const scrollEl = document.getElementById('dir-detail-scroll');
   if(!scrollEl || !person) return;
 
+  const DIR_PUBLIC_KEYS = new Set(['First Name', 'Last Name', 'Stake - District Name', 'Status']);
+
   const initials = dirInitials(person['First Name'], person['Last Name']);
   const fullName = `${person['First Name']||''} ${person['Last Name']||''}`.trim();
   const status = person['Status'] || '';
@@ -3116,7 +3118,7 @@ function renderDirDetail(person){
     <div class="dir-detail-hero">
       <div class="dir-detail-avatar ${dirAvatarClass(person['Gender'])}">${initials}</div>
       <div class="dir-detail-hero-name">${fullName}</div>
-      <div class="dir-detail-hero-sub">${[person['Session'] ? person['Session'] + ' Session' : '', person['Stake - District Name']].filter(Boolean).join(' • ')}</div>
+      <div class="dir-detail-hero-sub">${person['Stake - District Name'] || ''}</div>
       ${status ? `<span class="dir-status-badge ${statusClass}">${status}</span>` : ''}
     </div>
   `;
@@ -3124,6 +3126,14 @@ function renderDirDetail(person){
   DIR_DETAIL_SECTIONS.forEach(section => {
     html += `<div class="dir-detail-section"><h3>${section.title}</h3>`;
     section.fields.forEach(([key, label]) => {
+      if(!DIR_PUBLIC_KEYS.has(key)){
+        html += `
+          <div class="dir-detail-row">
+            <span class="dir-detail-label">${label}</span>
+            <span class="dir-detail-value empty">Private</span>
+          </div>`;
+        return;
+      }
       const value = person[key];
       const hasValue = value !== undefined && value !== null && String(value).trim() !== '';
       html += `
